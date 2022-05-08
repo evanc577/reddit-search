@@ -12,6 +12,7 @@ pub struct RedditPost {
     pub permalink: String,
     #[serde(skip)]
     tz_offset: i64,
+    pub id: String,
 }
 
 impl RedditPost {

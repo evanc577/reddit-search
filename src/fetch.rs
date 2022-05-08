@@ -26,6 +26,7 @@ impl From<JsValue> for FetchError {
 }
 
 pub async fn fetch(url: String) -> Result<String, FetchError> {
+    log::info!("Pushshift URL: {}", &url);
     let mut opts = RequestInit::new();
     opts.method("GET");
     opts.mode(RequestMode::Cors);
