@@ -71,3 +71,8 @@ body {
     word-break: break-word;
     white-space: pre-line;
 }
+
+input[type=datetime-local] {
+    appearance: button;
+    content: "";
+}

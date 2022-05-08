@@ -1,4 +1,4 @@
 [[hooks]]
-stage = "build"
+stage = "pre_build"
 command = "npx"
 command_arguments = ["rollup", "--config", "rollup.config.js"]

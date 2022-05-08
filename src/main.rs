@@ -1,7 +1,6 @@
 mod fetch;
 mod pushshift;
 mod text_input;
-mod date_time_input;
 
 use fetch::fetch;
 use gloo_storage::{LocalStorage, Storage};
@@ -9,8 +8,8 @@ use pushshift::{parse_pushshift, RedditPost};
 use url::Url;
 use yew::prelude::*;
 
-use crate::text_input::TextInput;
 use crate::date_time_input::DateTimeInput;
+use crate::text_input::TextInput;
 
 pub enum FetchState {
     NotFetching,
@@ -170,43 +169,40 @@ impl Component for Model {
         let on_query_change = ctx.link().callback(Msg::UpdateQuery);
         let on_time_start_change = ctx.link().callback(Msg::UpdateTimeStart);
         let on_time_end_change = ctx.link().callback(Msg::UpdateTimeEnd);
-        let mut elems = vec![
-            html! {
-                <>
-                    <label for="subreddit">{ "Subreddit:" }</label>
-                    <TextInput id={"subreddit"} on_change={on_subreddit_change} value={self.params.subreddit.clone()} />
-                    <br/>
+        let mut elems = vec![html! {
+            <>
+                <label for="subreddit">{ "Subreddit:" }</label>
+                <TextInput id={"subreddit"} on_change={on_subreddit_change} value={self.params.subreddit.clone()} />
+                <br/>
 
-                    <label for="author">{ "Author:" }</label>
-                    <TextInput id={"author"} on_change={on_author_change} value={self.params.author.clone()} />
-                    <br/>
+                <label for="author">{ "Author:" }</label>
+                <TextInput id={"author"} on_change={on_author_change} value={self.params.author.clone()} />
+                <br/>
 
-                    <label for="query">{ "Query:" }</label>
-                    <TextInput id={"query"} on_change={on_query_change} value={self.params.query.clone()} />
-                    <br />
+                <label for="query">{ "Query:" }</label>
+                <TextInput id={"query"} on_change={on_query_change} value={self.params.query.clone()} />
+                <br />
 
-                    <label for="time_start">{ "Time Start:" }</label>
-                    <DateTimeInput id={"time_start"} on_change={on_time_start_change} value={self.params.time_start.clone()} />
-                    <br />
+                <label for="time_start">{ "Time Start:" }</label>
+                <TextInput id={"time_start"} on_change={on_time_start_change} value={self.params.time_start.clone()} />
+                <br />
 
-                    <label for="time_end">{ "Time End:" }</label>
-                    <DateTimeInput id={"time_end"} on_change={on_time_end_change} value={self.params.time_end.clone()} />
-                    <br />
+                <label for="time_end">{ "Time End:" }</label>
+                <TextInput id={"time_end"} on_change={on_time_end_change} value={self.params.time_end.clone()} />
+                <br />
 
-                    <button onclick={ctx.link().callback(|_| Msg::Search)}>
-                    { "Search" }
+                <button onclick={ctx.link().callback(|_| Msg::Search)}>
+                { "Search" }
 
-                    <script src={"bundle.js"}></script>
-                </button>
-                    </>
-            }
-        ];
+                <script src={"bundle.js"}></script>
+            </button>
+                </>
+        }];
 
         // Results
         for post in &self.results {
             elems.push(post.html())
         }
-
 
         match &self.state {
             FetchState::Fetching => elems.push(html! { "Fetching..." }),
@@ -236,7 +232,6 @@ impl Component for Model {
     fn destroy(&mut self, ctx: &Context<Self>) {}
 }
 
-
 impl Model {
     fn search(&mut self, ctx: &Context<Self>, search_type: SearchType) {
         static BASE_URL: &str = "https://api.pushshift.io/reddit/comment/search";
@@ -258,7 +253,8 @@ impl Model {
             // If getting more posts, add "before_id" GET parameter
             if let FetchState::Done = &self.state {
                 if let Some(post) = self.results.last() {
-                    url.query_pairs_mut().append_pair("before", &post.time.to_string());
+                    url.query_pairs_mut()
+                        .append_pair("before", &post.time.to_string());
                 }
             }
 
@@ -278,7 +274,7 @@ impl Model {
                 }
             });
         }
-        
+
         ctx.link()
             .send_message(Msg::SetPsFetchState(FetchState::Fetching));
     }
