@@ -1,6 +1,7 @@
 mod fetch;
 mod pushshift;
 mod text_input;
+mod date_time_input;
 
 use fetch::fetch;
 use gloo_storage::{LocalStorage, Storage};
@@ -9,6 +10,7 @@ use url::Url;
 use yew::prelude::*;
 
 use crate::text_input::TextInput;
+use crate::date_time_input::DateTimeInput;
 
 pub enum FetchState {
     NotFetching,
@@ -25,6 +27,8 @@ enum Msg {
     UpdateSubreddit(String),
     UpdateAuthor(String),
     UpdateQuery(String),
+    UpdateTimeStart(String),
+    UpdateTimeEnd(String),
 }
 
 struct Model {
@@ -41,6 +45,8 @@ pub struct SearchParams {
     subreddit: String,
     author: String,
     query: String,
+    time_start: String,
+    time_end: String,
 }
 
 #[derive(Clone)]
@@ -70,11 +76,21 @@ impl Component for Model {
             Ok(s) => s,
             Err(_) => String::new(),
         };
+        let time_start = match LocalStorage::get("time_start") {
+            Ok(s) => s,
+            Err(_) => String::new(),
+        };
+        let time_end = match LocalStorage::get("time_end") {
+            Ok(s) => s,
+            Err(_) => String::new(),
+        };
 
         let params = SearchParams {
             subreddit,
             author,
             query,
+            time_start,
+            time_end,
         };
 
         // Create model
@@ -110,6 +126,16 @@ impl Component for Model {
                 self.params.author = s;
                 false
             }
+            Msg::UpdateTimeStart(s) => {
+                log::info!("UpdateTimeStart {:?}", s);
+                self.params.time_start = s;
+                false
+            }
+            Msg::UpdateTimeEnd(s) => {
+                log::info!("UpdateTimeEnd {:?}", s);
+                self.params.time_end = s;
+                false
+            }
             Msg::SetPsFetchState(x) => {
                 if let FetchState::Success(_, _, ref params) = x {
                     // Update storage
@@ -142,6 +168,8 @@ impl Component for Model {
         let on_subreddit_change = ctx.link().callback(Msg::UpdateSubreddit);
         let on_author_change = ctx.link().callback(Msg::UpdateAuthor);
         let on_query_change = ctx.link().callback(Msg::UpdateQuery);
+        let on_time_start_change = ctx.link().callback(Msg::UpdateTimeStart);
+        let on_time_end_change = ctx.link().callback(Msg::UpdateTimeEnd);
         let mut elems = vec![
             html! {
                 <>
@@ -157,8 +185,18 @@ impl Component for Model {
                     <TextInput id={"query"} on_change={on_query_change} value={self.params.query.clone()} />
                     <br />
 
+                    <label for="time_start">{ "Time Start:" }</label>
+                    <DateTimeInput id={"time_start"} on_change={on_time_start_change} value={self.params.time_start.clone()} />
+                    <br />
+
+                    <label for="time_end">{ "Time End:" }</label>
+                    <DateTimeInput id={"time_end"} on_change={on_time_end_change} value={self.params.time_end.clone()} />
+                    <br />
+
                     <button onclick={ctx.link().callback(|_| Msg::Search)}>
                     { "Search" }
+
+                    <script src={"bundle.js"}></script>
                 </button>
                     </>
             }
