@@ -1,14 +1,14 @@
 mod fetch;
 mod pushshift;
 mod text_input;
+mod params;
 
 use fetch::fetch;
-use gloo_storage::{LocalStorage, Storage};
+use params::SearchParams;
 use pushshift::{parse_pushshift, RedditPost};
 use url::Url;
 use yew::prelude::*;
 
-use crate::date_time_input::DateTimeInput;
 use crate::text_input::TextInput;
 
 pub enum FetchState {
@@ -40,15 +40,6 @@ struct Model {
 }
 
 #[derive(Clone)]
-pub struct SearchParams {
-    subreddit: String,
-    author: String,
-    query: String,
-    time_start: String,
-    time_end: String,
-}
-
-#[derive(Clone)]
 pub enum SearchType {
     Initial,
     More,
@@ -62,42 +53,12 @@ impl Component for Model {
         // Get current timezone offset
         let tz_offset = -js_sys::Date::new_0().get_timezone_offset() as i64;
 
-        // Check storage and load previous search
-        let subreddit = match LocalStorage::get("subreddit") {
-            Ok(s) => s,
-            Err(_) => String::new(),
-        };
-        let author = match LocalStorage::get("author") {
-            Ok(s) => s,
-            Err(_) => String::new(),
-        };
-        let query = match LocalStorage::get("query") {
-            Ok(s) => s,
-            Err(_) => String::new(),
-        };
-        let time_start = match LocalStorage::get("time_start") {
-            Ok(s) => s,
-            Err(_) => String::new(),
-        };
-        let time_end = match LocalStorage::get("time_end") {
-            Ok(s) => s,
-            Err(_) => String::new(),
-        };
-
-        let params = SearchParams {
-            subreddit,
-            author,
-            query,
-            time_start,
-            time_end,
-        };
-
         // Create model
         Self {
             results: Vec::new(),
             state: FetchState::NotFetching,
             tz_offset,
-            params,
+            params: SearchParams::load(),
             last_params: None,
         }
     }
@@ -137,10 +98,7 @@ impl Component for Model {
             }
             Msg::SetPsFetchState(x) => {
                 if let FetchState::Success(_, _, ref params) = x {
-                    // Update storage
-                    LocalStorage::set("subreddit", params.subreddit.clone()).unwrap();
-                    LocalStorage::set("author", params.author.clone()).unwrap();
-                    LocalStorage::set("query", params.query.clone()).unwrap();
+                    params.store();
 
                     // Update last search params
                     self.last_params = Some(params.clone());
@@ -222,14 +180,6 @@ impl Component for Model {
             <div>{ for elems.into_iter() }</div>
         }
     }
-
-    fn changed(&mut self, ctx: &Context<Self>) -> bool {
-        true
-    }
-
-    fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {}
-
-    fn destroy(&mut self, ctx: &Context<Self>) {}
 }
 
 impl Model {
