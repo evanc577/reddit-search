@@ -10,6 +10,7 @@ body {
     max-width: 100%;
     min-width: 250px;
     margin: 5px;
+    padding: 5px;
     border-radius: 5px;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
     color: #e1e1da;
@@ -41,8 +42,15 @@ body {
     display: flex;
 }
 
+@media only screen and (max-width: 600px) {
+    .post_header {
+        flex-direction: column;
+    }
+}
+
 .post_header>* {
-    margin: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .subreddit {
@@ -61,4 +69,5 @@ body {
     color: #e1e1da;
     margin: 5px;
     word-break: break-word;
+    white-space: pre-line;
 }

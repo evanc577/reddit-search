@@ -47,6 +47,7 @@ pub fn parse_pushshift(
         post.permalink = format!("https://www.reddit.com{}?context=10000", post.permalink);
         post.subreddit = format!("r/{}", post.subreddit);
         post.author = format!("u/{}", post.author);
+        post.body = html_escape::decode_html_entities(&post.body).into_owned();
         post.tz_offset = tz_offset;
     }
     Ok(posts)
