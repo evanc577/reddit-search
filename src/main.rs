@@ -1,9 +1,10 @@
 mod fetch;
-mod text_input;
 mod pushshift;
+mod text_input;
 
 use fetch::fetch;
-use pushshift::{RedditPost, parse_pushshift};
+use gloo_storage::{LocalStorage, Storage};
+use pushshift::{parse_pushshift, RedditPost};
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
@@ -38,12 +39,29 @@ impl Component for Model {
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
+        // Get current timezone offset
         let tz_offset = -js_sys::Date::new_0().get_timezone_offset() as i64;
+
+        // Check storage and load previous search
+        let subreddit = match LocalStorage::get("subreddit") {
+            Ok(s) => s,
+            Err(_) => String::new(),
+        };
+        let author = match LocalStorage::get("author") {
+            Ok(s) => s,
+            Err(_) => String::new(),
+        };
+        let query = match LocalStorage::get("query") {
+            Ok(s) => s,
+            Err(_) => String::new(),
+        };
+
+        // Create model
         Self {
             ps_data: FetchState::NotFetching,
-            subreddit: String::new(),
-            author: String::new(),
-            query: String::new(),
+            subreddit,
+            author,
+            query,
             tz_offset,
         }
     }
@@ -58,12 +76,10 @@ impl Component for Model {
                 let tz_offset = self.tz_offset;
                 ctx.link().send_future(async move {
                     match fetch(url).await {
-                        Ok(x) => {
-                            match parse_pushshift(x, tz_offset) {
-                                Ok(p) => Msg::SetPsFetchState(FetchState::Success(p)),
-                                Err(e) => Msg::SetPsFetchState(FetchState::Failed(e.to_string())),
-                            }
-                        }
+                        Ok(x) => match parse_pushshift(x, tz_offset) {
+                            Ok(p) => Msg::SetPsFetchState(FetchState::Success(p)),
+                            Err(e) => Msg::SetPsFetchState(FetchState::Failed(e.to_string())),
+                        },
                         Err(e) => Msg::SetPsFetchState(FetchState::Failed(e.to_string())),
                     }
                 });
@@ -84,6 +100,13 @@ impl Component for Model {
                 false
             }
             Msg::SetPsFetchState(s) => {
+                // Update storage
+                if let FetchState::Success(_) = s {
+                    LocalStorage::set("subreddit", self.subreddit.clone()).unwrap();
+                    LocalStorage::set("author", self.author.clone()).unwrap();
+                    LocalStorage::set("query", self.query.clone()).unwrap();
+                }
+
                 self.ps_data = s;
                 true
             }

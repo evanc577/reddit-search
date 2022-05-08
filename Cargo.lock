@@ -247,6 +247,7 @@ name = "pushshift-web"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "gloo-storage",
  "gloo-utils",
  "js-sys",
  "log",
