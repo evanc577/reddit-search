@@ -1,16 +1,16 @@
 mod fetch;
 mod params;
 mod pushshift;
-mod text_input;
+mod component;
 
 use fetch::fetch;
 use params::SearchParams;
 use pushshift::{parse_pushshift, RedditPost};
-use time::{format_description, UtcOffset, PrimitiveDateTime};
+use time::{format_description, PrimitiveDateTime, UtcOffset};
 use url::Url;
 use yew::prelude::*;
 
-use crate::text_input::TextInput;
+use component::search_box::{SearchBox, Width};
 
 pub enum FetchState {
     NotFetching,
@@ -122,41 +122,8 @@ impl Component for Model {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        // Search form
-        let on_subreddit_change = ctx.link().callback(Msg::UpdateSubreddit);
-        let on_author_change = ctx.link().callback(Msg::UpdateAuthor);
-        let on_query_change = ctx.link().callback(Msg::UpdateQuery);
-        let on_time_start_change = ctx.link().callback(Msg::UpdateTimeStart);
-        let on_time_end_change = ctx.link().callback(Msg::UpdateTimeEnd);
-        let mut elems = vec![html! {
-            <>
-                <label for="subreddit">{ "Subreddit:" }</label>
-                <TextInput id={"subreddit"} on_change={on_subreddit_change} value={self.params.subreddit.clone()} />
-                <br/>
-
-                <label for="author">{ "Author:" }</label>
-                <TextInput id={"author"} on_change={on_author_change} value={self.params.author.clone()} />
-                <br/>
-
-                <label for="query">{ "Query:" }</label>
-                <TextInput id={"query"} on_change={on_query_change} value={self.params.query.clone()} />
-                <br />
-
-                <label for="time_start">{ "Time Start:" }</label>
-                <TextInput id={"time_start"} on_change={on_time_start_change} value={self.params.time_start.clone()} />
-                <br />
-
-                <label for="time_end">{ "Time End:" }</label>
-                <TextInput id={"time_end"} on_change={on_time_end_change} value={self.params.time_end.clone()} />
-                <br />
-
-                <button onclick={ctx.link().callback(|_| Msg::Search)}>
-                { "Search" }
-
-                <script src={"bundle.js"}></script>
-            </button>
-                </>
-        }];
+        // Search box
+        let mut elems = vec![self.search_form(ctx)];
 
         // Results
         for post in &self.results {
@@ -184,6 +151,58 @@ impl Component for Model {
 }
 
 impl Model {
+    fn search_form(&self, ctx: &Context<Self>) -> Html {
+        let on_subreddit_change = ctx.link().callback(Msg::UpdateSubreddit);
+        let on_author_change = ctx.link().callback(Msg::UpdateAuthor);
+        let on_query_change = ctx.link().callback(Msg::UpdateQuery);
+        let on_time_start_change = ctx.link().callback(Msg::UpdateTimeStart);
+        let on_time_end_change = ctx.link().callback(Msg::UpdateTimeEnd);
+
+        html! {
+            <div class="search">
+                <div>
+                    <SearchBox width={Width::Half}
+                        id={"subreddit"}
+                        label={"Subreddit:"}
+                        on_change={on_subreddit_change}
+                        value={self.params.subreddit.clone()} />
+                    <SearchBox width={Width::Half}
+                        id={"author"}
+                        label={"Author:"}
+                        on_change={on_author_change}
+                        value={self.params.author.clone()} />
+                </div>
+
+                <div>
+                    <SearchBox width={Width::Half}
+                        id={"time_start"}
+                        label={"After:"}
+                        on_change={on_time_start_change}
+                        value={self.params.time_start.clone()} />
+                    <SearchBox width={Width::Half}
+                        id={"time_end"}
+                        label={"Before:"}
+                        on_change={on_time_end_change}
+                        value={self.params.time_end.clone()} />
+                </div>
+
+                <div>
+                    <SearchBox width={Width::Full}
+                        id={"query"}
+                        label={"Query:"}
+                        on_change={on_query_change}
+                        value={self.params.query.clone()} />
+                </div>
+
+                <button onclick={ctx.link().callback(|_| Msg::Search)} >
+                { "Search" }
+                </button>
+
+                <script src={"bundle.js"}></script>
+            </div>
+        }
+    }
+
     fn search(&mut self, ctx: &Context<Self>, search_type: SearchType) {
         static BASE_URL: &str = "https://api.pushshift.io/reddit/comment/search";
         let params = match search_type {
