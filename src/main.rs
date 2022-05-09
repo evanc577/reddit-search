@@ -153,6 +153,10 @@ impl Model {
         let on_time_start_change = ctx.link().callback(Msg::UpdateTimeStart);
         let on_time_end_change = ctx.link().callback(Msg::UpdateTimeEnd);
         let search_button_click = ctx.link().callback(|_| Msg::Search);
+        let on_submit = ctx.link().callback(|e: FocusEvent| {
+            e.prevent_default();
+            Msg::Search
+        });
 
         let search_state = if matches!(self.state, FetchState::Fetching) {
             SearchState::Working("Fetching...".to_string())
@@ -161,7 +165,8 @@ impl Model {
         };
 
         html! {
-            <div class="search">
+            <form class="search" onsubmit={on_submit}>
+                <input type="submit" style="display: none" />
                 <div>
                     <SearchBox width={Width::Half}
                         id={"subreddit"}
@@ -199,7 +204,7 @@ impl Model {
                 <SearchButton state={search_state} on_click={search_button_click} />
 
                 <script src={"bundle.js"}></script>
-            </div>
+            </form>
         }
     }
 
