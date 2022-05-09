@@ -130,9 +130,18 @@ body {
     color: #78dce8;
 }
 
+.post {
+    display: flex;
+}
+
+.post_thumb {
+    margin: 5px;
+    width: 8rem;
+    border-radius: 5px;
+}
+
 .comment_title {
     font-weight: bold;
-    /* font-size: 1.5rem; */
 }
 
 .comment_title,
@@ -150,5 +159,9 @@ body {
 
     .search_half {
         width: 100%;
+    }
+
+    .post {
+        flex-direction: column;
     }
 }

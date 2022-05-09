@@ -102,6 +102,14 @@ impl Reddit for RedditSubmission {
             html! {}
         };
 
+        let thumbnail = if !self.is_self {
+            html! {
+                <img class="post_thumb" src={self.thumbnail.clone()} />
+            }
+        } else {
+            html! {}
+        };
+
         html! {
             <div class="reddit_comment">
                 <a href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
@@ -110,8 +118,15 @@ impl Reddit for RedditSubmission {
                         <div class="author">{self.author.clone()}</div>
                         <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
                     </div>
-                    <div class="comment_title">{self.title.clone()}</div>
-                    {selftext}
+                    <div class="post">
+                        <div>
+                            {thumbnail}
+                        </div>
+                        <div>
+                            <div class="comment_title">{self.title.clone()}</div>
+                            {selftext}
+                        </div>
+                    </div>
                 </a>
             </div>
         }
