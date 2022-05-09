@@ -2,21 +2,41 @@ use serde::Deserialize;
 use time::{format_description, OffsetDateTime, UtcOffset};
 use yew::prelude::*;
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
-pub struct RedditComment {
-    pub subreddit: String,
-    pub author: String,
-    #[serde(rename = "created_utc")]
-    pub time: i64,
-    pub body: String,
-    pub permalink: String,
-    #[serde(skip)]
-    tz_offset: i64,
-    pub id: String,
+pub trait Reddit {
+    fn time(&self) -> i64;
+    fn html(&self) -> Html;
+    fn parse_pushshift(
+        json: impl AsRef<str>,
+        tz_offset: i64,
+    ) -> Result<Vec<RedditType>, serde_json::Error>
+    where
+        Self: Sized;
 }
 
-impl RedditComment {
-    pub fn html(&self) -> Html {
+#[derive(Deserialize, Debug, Clone)]
+struct RedditMultiple<T> {
+    data: Vec<T>,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct RedditComment {
+    subreddit: String,
+    author: String,
+    #[serde(rename = "created_utc")]
+    time: i64,
+    body: String,
+    permalink: String,
+    #[serde(skip)]
+    tz_offset: i64,
+    id: String,
+}
+
+impl Reddit for RedditComment {
+    fn time(&self) -> i64 {
+        self.time
+    }
+
+    fn html(&self) -> Html {
         html! {
             <div class="reddit_comment">
                 <a href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
@@ -30,28 +50,116 @@ impl RedditComment {
             </div>
         }
     }
+
+    fn parse_pushshift(
+        json: impl AsRef<str>,
+        tz_offset: i64,
+    ) -> Result<Vec<RedditType>, serde_json::Error> {
+        let comments: RedditMultiple<Self> = serde_json::from_str(json.as_ref())?;
+        let mut comments = comments.data;
+        for comment in comments.iter_mut() {
+            comment.permalink =
+                format!("https://www.reddit.com{}?context=10000", comment.permalink);
+            comment.subreddit = format!("r/{}", comment.subreddit);
+            comment.author = format!("u/{}", comment.author);
+            comment.body = html_escape::decode_html_entities(&comment.body).into_owned();
+            comment.tz_offset = tz_offset;
+        }
+
+        let comments = comments.into_iter().map(RedditType::Comment).collect();
+        Ok(comments)
+    }
 }
 
-#[derive(Deserialize, Debug, Clone)]
-struct RedditCommentMultiple {
-    data: Vec<RedditComment>,
-}
-
-pub fn parse_pushshift(
-    json: impl AsRef<str>,
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct RedditSubmission {
+    subreddit: String,
+    author: String,
+    #[serde(rename = "created_utc")]
+    time: i64,
+    permalink: String,
+    #[serde(skip)]
     tz_offset: i64,
-) -> Result<Vec<RedditComment>, serde_json::Error> {
-    let comments: RedditCommentMultiple = serde_json::from_str(json.as_ref())?;
-    let mut comments = comments.data;
-    for comment in comments.iter_mut() {
-        comment.permalink = format!("https://www.reddit.com{}?context=10000", comment.permalink);
-        comment.subreddit = format!("r/{}", comment.subreddit);
-        comment.author = format!("u/{}", comment.author);
-        comment.body = html_escape::decode_html_entities(&comment.body).into_owned();
-        comment.tz_offset = tz_offset;
+    id: String,
+    is_self: bool,
+    thumbnail: String,
+    title: String,
+    url: String,
+    selftext: String,
+}
+
+impl Reddit for RedditSubmission {
+    fn time(&self) -> i64 {
+        self.time
     }
 
-    Ok(comments)
+    fn html(&self) -> Html {
+        let selftext = if self.is_self {
+            html! {
+                <div class="comment_body">{self.selftext.clone()}</div>
+            }
+        } else {
+            html! {}
+        };
+
+        html! {
+            <div class="reddit_comment">
+                <a href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
+                    <div class="comment_header">
+                        <div class="subreddit">{self.subreddit.clone()}</div>
+                        <div class="author">{self.author.clone()}</div>
+                        <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
+                    </div>
+                    <div class="comment_title">{self.title.clone()}</div>
+                    {selftext}
+                </a>
+            </div>
+        }
+    }
+
+    fn parse_pushshift(
+        json: impl AsRef<str>,
+        tz_offset: i64,
+    ) -> Result<Vec<RedditType>, serde_json::Error> {
+        let submissions: RedditMultiple<Self> = serde_json::from_str(json.as_ref())?;
+        let mut submissions = submissions.data;
+        for submission in submissions.iter_mut() {
+            submission.permalink = format!("https://www.reddit.com{}", submission.permalink);
+            submission.subreddit = format!("r/{}", submission.subreddit);
+            submission.author = format!("u/{}", submission.author);
+            submission.title = html_escape::decode_html_entities(&submission.title).into_owned();
+            submission.selftext =
+                html_escape::decode_html_entities(&submission.selftext).into_owned();
+            submission.tz_offset = tz_offset;
+        }
+
+        let submissions = submissions
+            .into_iter()
+            .map(RedditType::Submission)
+            .collect();
+        Ok(submissions)
+    }
+}
+
+pub enum RedditType {
+    Comment(RedditComment),
+    Submission(RedditSubmission),
+}
+
+impl RedditType {
+    pub fn time(&self) -> i64 {
+        match self {
+            Self::Comment(c) => c.time(),
+            Self::Submission(s) => s.time(),
+        }
+    }
+
+    pub fn html(&self) -> Html {
+        match self {
+            Self::Comment(c) => c.html(),
+            Self::Submission(s) => s.html(),
+        }
+    }
 }
 
 fn format_timestamp(ts: i64, tz_offset: i64) -> String {

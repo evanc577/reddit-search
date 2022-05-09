@@ -3,11 +3,15 @@ mod fetch;
 mod params;
 mod pushshift;
 
-use component::search_box::{SearchBox, Width};
+use std::str::FromStr;
+
+use component::search_box::SearchBox;
+use component::Width;
 use component::search_button::{SearchButton, SearchState};
+use component::select::Select;
 use fetch::fetch;
-use params::SearchParams;
-use pushshift::{parse_pushshift, RedditComment};
+use params::{SearchParams, Endpoint};
+use pushshift::RedditType;
 use time::{format_description, PrimitiveDateTime, UtcOffset};
 use url::Url;
 use yew::prelude::*;
@@ -15,7 +19,7 @@ use yew::prelude::*;
 pub enum FetchState {
     NotFetching,
     Fetching,
-    Success(Vec<RedditComment>, SearchType, SearchParams),
+    Success(Vec<RedditType>, SearchType, SearchParams),
     Done,
     Failed(String),
 }
@@ -24,6 +28,7 @@ enum Msg {
     Search,
     More,
     SetPsFetchState(FetchState),
+    UpdateEndpoint(String),
     UpdateSubreddit(String),
     UpdateAuthor(String),
     UpdateQuery(String),
@@ -32,7 +37,7 @@ enum Msg {
 }
 
 struct Model {
-    results: Vec<RedditComment>,
+    results: Vec<RedditType>,
     state: FetchState,
     tz_offset: i64,
     params: SearchParams,
@@ -45,6 +50,7 @@ pub enum SearchType {
     Initial,
     More,
 }
+
 
 impl Component for Model {
     type Message = Msg;
@@ -73,6 +79,12 @@ impl Component for Model {
             }
             Msg::More => {
                 self.search(ctx, SearchType::More);
+                false
+            }
+            Msg::UpdateEndpoint(s) => {
+                if let Ok(e) = Endpoint::from_str(&s) {
+                    self.params.endpoint = e;
+                }
                 false
             }
             Msg::UpdateSubreddit(s) => {
@@ -147,6 +159,7 @@ impl Component for Model {
 
 impl Model {
     fn search_form(&self, ctx: &Context<Self>) -> Html {
+        let on_endpoint_change = ctx.link().callback(Msg::UpdateEndpoint);
         let on_subreddit_change = ctx.link().callback(Msg::UpdateSubreddit);
         let on_author_change = ctx.link().callback(Msg::UpdateAuthor);
         let on_query_change = ctx.link().callback(Msg::UpdateQuery);
@@ -167,6 +180,14 @@ impl Model {
         html! {
             <form class="search" onsubmit={on_submit}>
                 <input type="submit" style="display: none" />
+
+                <div>
+                    <Select id={"endpoint"}
+                        on_input={on_endpoint_change}
+                        options={Endpoint::list()}
+                        selected={self.params.endpoint.to_string()} />
+                </div>
+
                 <div>
                     <SearchBox width={Width::Half}
                         id={"subreddit"}
@@ -222,14 +243,13 @@ impl Model {
     }
 
     fn search(&mut self, ctx: &Context<Self>, search_type: SearchType) {
-        static BASE_URL: &str = "https://api.pushshift.io/reddit/comment/search";
         let params = match search_type {
             SearchType::Initial => self.params.clone(),
             SearchType::More => self.last_params.clone().unwrap(),
         };
 
         let url = {
-            let mut url = Url::parse(BASE_URL).unwrap();
+            let mut url = Url::parse(self.params.endpoint.url()).unwrap();
 
             // Add GET query parameters
             url.query_pairs_mut()
@@ -247,7 +267,7 @@ impl Model {
             if let FetchState::Done = &self.state {
                 if let Some(r) = self.results.last() {
                     url.query_pairs_mut()
-                        .append_pair("before", &r.time.to_string());
+                        .append_pair("before", &r.time().to_string());
                 }
             } else if let Some(ts) = parse_time(&params.time_end, self.tz_offset) {
                 url.query_pairs_mut().append_pair("before", &ts.to_string());
@@ -259,9 +279,10 @@ impl Model {
         // Message to send when search finishes
         {
             let tz_offset = self.tz_offset;
+            let endpoint = self.params.endpoint.clone();
             ctx.link().send_future(async move {
                 match fetch(url).await {
-                    Ok(x) => match parse_pushshift(x, tz_offset) {
+                    Ok(x) => match endpoint.parse(x, tz_offset) {
                         Ok(p) => Msg::SetPsFetchState(FetchState::Success(p, search_type, params)),
                         Err(e) => Msg::SetPsFetchState(FetchState::Failed(e.to_string())),
                     },
