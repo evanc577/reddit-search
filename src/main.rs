@@ -1,16 +1,16 @@
+mod component;
 mod fetch;
 mod params;
 mod pushshift;
-mod component;
 
+use component::search_box::{SearchBox, Width};
+use component::search_button::{SearchButton, SearchState};
 use fetch::fetch;
 use params::SearchParams;
 use pushshift::{parse_pushshift, RedditComment};
 use time::{format_description, PrimitiveDateTime, UtcOffset};
 use url::Url;
 use yew::prelude::*;
-
-use component::search_box::{SearchBox, Width};
 
 pub enum FetchState {
     NotFetching,
@@ -126,22 +126,17 @@ impl Component for Model {
         let mut elems = vec![self.search_form(ctx)];
 
         // Results
-        for r in &self.results {
-            elems.push(r.html())
+        if !self.results.is_empty() {
+            elems.push(html! {
+                <div class="results">
+                    {for self.results.iter().map(|r| r.html()).chain(std::iter::once(self.more_button(ctx)))}
+                </div>
+            });
         }
 
-        match &self.state {
-            FetchState::Fetching => elems.push(html! { "Fetching..." }),
-            FetchState::Failed(err) => elems.push(html! { err }),
-            FetchState::Done => {
-                // More button
-                if !self.results.is_empty() {
-                    elems.push(html! {
-                        <button onclick={ctx.link().callback(|_| Msg::More)}>{"More"}</button>
-                    });
-                }
-            }
-            _ => (),
+        // Error message
+        if let FetchState::Failed(err) = &self.state {
+            elems.push(html! { err });
         }
 
         html! {
@@ -157,6 +152,13 @@ impl Model {
         let on_query_change = ctx.link().callback(Msg::UpdateQuery);
         let on_time_start_change = ctx.link().callback(Msg::UpdateTimeStart);
         let on_time_end_change = ctx.link().callback(Msg::UpdateTimeEnd);
+        let search_button_click = ctx.link().callback(|_| Msg::Search);
+
+        let search_state = if matches!(self.state, FetchState::Fetching) {
+            SearchState::Working("Fetching...".to_string())
+        } else {
+            SearchState::Idle("Search".to_string())
+        };
 
         html! {
             <div class="search">
@@ -194,12 +196,23 @@ impl Model {
                         value={self.params.query.clone()} />
                 </div>
 
-                <button onclick={ctx.link().callback(|_| Msg::Search)} >
-                { "Search" }
-                </button>
+                <SearchButton state={search_state} on_click={search_button_click} />
 
                 <script src={"bundle.js"}></script>
             </div>
+        }
+    }
+
+    fn more_button(&self, ctx: &Context<Self>) -> Html {
+        let on_click = ctx.link().callback(|_| Msg::More);
+        let search_state = if matches!(self.state, FetchState::Fetching) {
+            SearchState::Working("Fetching...".to_string())
+        } else {
+            SearchState::Idle("More".to_string())
+        };
+
+        html! {
+            <SearchButton state={search_state} on_click={on_click} />
         }
     }
 

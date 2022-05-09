@@ -27,18 +27,47 @@ body {
 }
 
 .search input {
+    color: #e1e1da;
+    background-color: #474842;
     box-sizing: border-box;
+    border: 1px solid #222222;
+    border-radius: 5px;
     padding: 0.25rem;
     margin: 0.25rem 0 0.25rem 0;
     font-size: 1.25rem;
     width: 100%;
 }
 
+.search_button {
+    background-color: #e6c35c;
+    color: #474842;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0.25rem auto 0.25rem auto;
+    user-select: none;
+}
+
+.button_active:hover {
+    background-color: #ffd866;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+}
+
+.search_button>p {
+    margin: 1rem;
+}
+
+.results {
+    margin: auto;
+    max-width: 64rem;
+}
+
 .reddit_comment {
     text-decoration: none;
     position: relative;
     display: block;
-    max-width: 64rem;
     min-width: 250px;
     margin: 5px auto 5px auto;
     padding: 5px;

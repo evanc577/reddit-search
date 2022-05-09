@@ -2,7 +2,7 @@ use serde::Deserialize;
 use time::{format_description, OffsetDateTime, UtcOffset};
 use yew::prelude::*;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct RedditComment {
     pub subreddit: String,
     pub author: String,
