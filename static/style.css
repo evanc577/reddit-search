@@ -34,7 +34,7 @@ body {
     width: 100%;
 }
 
-.reddit_post {
+.reddit_comment {
     text-decoration: none;
     position: relative;
     display: block;
@@ -48,32 +48,32 @@ body {
     background-color: #2f302a;
 }
 
-.reddit_post:hover {
+.reddit_comment:hover {
     background-color: #373832;
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
 }
 
-.reddit_post *:link {
+.reddit_comment *:link {
     text-decoration: none;
 }
 
-.reddit_post *:visited {
+.reddit_comment *:visited {
     text-decoration: none;
 }
 
-.reddit_post *:hover {
+.reddit_comment *:hover {
     text-decoration: none;
 }
 
-.reddit_post *:active {
+.reddit_comment *:active {
     text-decoration: none;
 }
 
-.post_header {
+.comment_header {
     display: flex;
 }
 
-.post_header>* {
+.comment_header>* {
     margin-left: 5px;
     margin-right: 5px;
 }
@@ -90,20 +90,15 @@ body {
     color: #78dce8;
 }
 
-.post_body {
+.comment_body {
     color: #e1e1da;
     margin: 5px;
     word-break: break-word;
     white-space: pre-line;
 }
 
-input[type=datetime-local] {
-    appearance: button;
-    content: "";
-}
-
 @media only screen and (max-width: 600px) {
-    .post_header {
+    .comment_header {
         flex-direction: column;
     }
 

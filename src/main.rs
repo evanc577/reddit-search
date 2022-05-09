@@ -5,7 +5,7 @@ mod component;
 
 use fetch::fetch;
 use params::SearchParams;
-use pushshift::{parse_pushshift, RedditPost};
+use pushshift::{parse_pushshift, RedditComment};
 use time::{format_description, PrimitiveDateTime, UtcOffset};
 use url::Url;
 use yew::prelude::*;
@@ -15,7 +15,7 @@ use component::search_box::{SearchBox, Width};
 pub enum FetchState {
     NotFetching,
     Fetching,
-    Success(Vec<RedditPost>, SearchType, SearchParams),
+    Success(Vec<RedditComment>, SearchType, SearchParams),
     Done,
     Failed(String),
 }
@@ -32,7 +32,7 @@ enum Msg {
 }
 
 struct Model {
-    results: Vec<RedditPost>,
+    results: Vec<RedditComment>,
     state: FetchState,
     tz_offset: i64,
     params: SearchParams,
@@ -106,12 +106,12 @@ impl Component for Model {
                 }
 
                 match x {
-                    FetchState::Success(posts, SearchType::Initial, _) => {
-                        self.results = posts;
+                    FetchState::Success(r, SearchType::Initial, _) => {
+                        self.results = r;
                         self.state = FetchState::Done;
                     }
-                    FetchState::Success(mut posts, SearchType::More, _) => {
-                        self.results.append(&mut posts);
+                    FetchState::Success(mut r, SearchType::More, _) => {
+                        self.results.append(&mut r);
                         self.state = FetchState::Done;
                     }
                     _ => self.state = x,
@@ -126,8 +126,8 @@ impl Component for Model {
         let mut elems = vec![self.search_form(ctx)];
 
         // Results
-        for post in &self.results {
-            elems.push(post.html())
+        for r in &self.results {
+            elems.push(r.html())
         }
 
         match &self.state {
@@ -225,11 +225,11 @@ impl Model {
                 url.query_pairs_mut().append_pair("after", &ts.to_string());
             }
 
-            // If getting more posts, add "before_id" GET parameter
+            // If getting more posts/comments, add "before_id" GET parameter
             if let FetchState::Done = &self.state {
-                if let Some(post) = self.results.last() {
+                if let Some(r) = self.results.last() {
                     url.query_pairs_mut()
-                        .append_pair("before", &post.time.to_string());
+                        .append_pair("before", &r.time.to_string());
                 }
             } else if let Some(ts) = parse_time(&params.time_end, self.tz_offset) {
                 url.query_pairs_mut().append_pair("before", &ts.to_string());
