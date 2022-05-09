@@ -50,6 +50,7 @@ pub fn parse_pushshift(
         post.body = html_escape::decode_html_entities(&post.body).into_owned();
         post.tz_offset = tz_offset;
     }
+
     Ok(posts)
 }
 

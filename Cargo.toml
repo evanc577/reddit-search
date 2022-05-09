@@ -23,6 +23,7 @@ yew = "0.19"
 version = "0.3"
 features = [
   "formatting",
+  "parsing",
 ]
 
 [dependencies.web-sys]

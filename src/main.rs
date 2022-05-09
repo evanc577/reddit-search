@@ -1,11 +1,12 @@
 mod fetch;
+mod params;
 mod pushshift;
 mod text_input;
-mod params;
 
 use fetch::fetch;
 use params::SearchParams;
 use pushshift::{parse_pushshift, RedditPost};
+use time::{format_description, UtcOffset, PrimitiveDateTime};
 use url::Url;
 use yew::prelude::*;
 
@@ -195,10 +196,15 @@ impl Model {
 
             // Add GET query parameters
             url.query_pairs_mut()
+                .append_pair("sort", "desc")
                 .append_pair("limit", "10000")
                 .append_pair("subreddit", &params.subreddit)
                 .append_pair("author", &params.author)
                 .append_pair("q", &params.query);
+
+            if let Some(ts) = parse_time(&params.time_start, self.tz_offset) {
+                url.query_pairs_mut().append_pair("after", &ts.to_string());
+            }
 
             // If getting more posts, add "before_id" GET parameter
             if let FetchState::Done = &self.state {
@@ -206,6 +212,8 @@ impl Model {
                     url.query_pairs_mut()
                         .append_pair("before", &post.time.to_string());
                 }
+            } else if let Some(ts) = parse_time(&params.time_end, self.tz_offset) {
+                url.query_pairs_mut().append_pair("before", &ts.to_string());
             }
 
             url.to_string()
@@ -228,6 +236,15 @@ impl Model {
         ctx.link()
             .send_message(Msg::SetPsFetchState(FetchState::Fetching));
     }
+}
+
+fn parse_time(s: impl AsRef<str>, offset: i64) -> Option<i64> {
+    let format = format_description::parse("[year]-[month]-[day] [hour]:[minute]").unwrap();
+    let ts = PrimitiveDateTime::parse(s.as_ref(), &format)
+        .ok()?
+        .assume_offset(UtcOffset::from_whole_seconds(60 * offset as i32).ok()?)
+        .unix_timestamp();
+    Some(ts)
 }
 
 fn main() {
