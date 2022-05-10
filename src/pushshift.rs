@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use time::{format_description, OffsetDateTime, UtcOffset};
+use web_sys::HtmlImageElement;
 use yew::prelude::*;
 
 pub trait Reddit {
@@ -103,8 +104,19 @@ impl Reddit for RedditSubmission {
         };
 
         let thumbnail = if !self.is_self {
+            let onerror = Callback::from(|e: Event| {
+                if let Some(target) = e.target_dyn_into::<HtmlImageElement>() {
+                    static BAD_IMAGE: &str = "bad-image.svg";
+                    if !target.src().ends_with(BAD_IMAGE) {
+                        target.set_src(BAD_IMAGE);
+                    }
+                }
+            });
             html! {
-                <img class="post_thumb" src={self.thumbnail.clone()} />
+                <img class="post_thumb"
+                    alt="Reddit thumbnail"
+                    src={self.thumbnail.clone()}
+                    onerror={onerror} />
             }
         } else {
             html! {}
