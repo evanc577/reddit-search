@@ -44,7 +44,7 @@ body {
 }
 
 #endpoint {
-    margin: 0.25rem auto 0.25rem auto;
+    margin: 0 auto 0.25rem auto;
     padding: 0.25rem;
     font-size: 1.25rem;
     color: var(--fg);
@@ -52,6 +52,12 @@ body {
     box-sizing: border-box;
     border: 1px solid var(--search-border);
     border-radius: 5px;
+    width: 100%;
+}
+
+.endpoint {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .search label {

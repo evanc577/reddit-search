@@ -182,7 +182,10 @@ impl Model {
                 <input type="submit" style="display: none" />
 
                 <div>
-                    <Select id={"endpoint"}
+                    <Select width={Width::Half}
+                        id={"endpoint"}
+                        class={"endpoint"}
+                        label={"Endpoint:"}
                         on_input={on_endpoint_change}
                         options={Endpoint::list()}
                         selected={self.params.endpoint.to_string()} />

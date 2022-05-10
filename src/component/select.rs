@@ -5,7 +5,10 @@ use super::{select_value, Width};
 
 #[derive(Clone, PartialEq, Properties)]
 pub struct Props {
+    pub width: Width,
     pub id: String,
+    pub class: String,
+    pub label: String,
     pub options: Vec<String>,
     pub selected: String,
     pub on_input: Callback<String>,
@@ -13,21 +16,26 @@ pub struct Props {
 
 #[function_component(Select)]
 pub fn select(props: &Props) -> Html {
-    let Props { id, options, selected, on_input } = props.clone();
+    let Props { width, id, class, label, options, selected, on_input } = props.clone();
 
     let oninput = Callback::from(move |event: InputEvent| {
         on_input.emit(select_value(event));
     });
 
-    let width = Width::Half;
-
     let options: Vec<_> = options.iter().map(|s| html! {
         <option value={s.clone()} selected={s == &selected}>{s.clone()}</option>
     }).collect();
 
+    let class = format!("{} {}", width.class(), class);
+
     html! {
-        <select class={width.class()} id={id} {oninput}>
-            {options}
-        </select>
+        <div {class}>
+            <div>
+                <label for={id.clone()} name={label.clone()}>{label}</label>
+                <select id={id} {oninput}>
+                    {options}
+                </select>
+            </div>
+        </div>
     }
 }
