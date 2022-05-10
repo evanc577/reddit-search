@@ -103,7 +103,7 @@ impl Reddit for RedditSubmission {
             html! {}
         };
 
-        let thumbnail = if !self.is_self {
+        let thumbnail = if !self.is_self && self.thumbnail != "default" {
             let onerror = Callback::from(|e: Event| {
                 if let Some(target) = e.target_dyn_into::<HtmlImageElement>() {
                     static BAD_IMAGE: &str = "bad-image.svg";
