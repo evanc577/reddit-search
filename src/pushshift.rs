@@ -39,16 +39,14 @@ impl Reddit for RedditComment {
 
     fn html(&self) -> Html {
         html! {
-            <div class="reddit_comment">
-                <a href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
-                    <div class="comment_header">
-                        <div class="subreddit">{self.subreddit.clone()}</div>
-                        <div class="author">{self.author.clone()}</div>
-                        <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
-                    </div>
-                    <div class="comment_body">{self.body.clone()}</div>
-                </a>
-            </div>
+            <a class="reddit_comment" href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
+                <div class="comment_header">
+                    <div class="subreddit">{self.subreddit.clone()}</div>
+                    <div class="author">{self.author.clone()}</div>
+                    <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
+                </div>
+                <div class="comment_body">{self.body.clone()}</div>
+            </a>
         }
     }
 
@@ -123,24 +121,22 @@ impl Reddit for RedditSubmission {
         };
 
         html! {
-            <div class="reddit_comment">
-                <a href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
-                    <div class="comment_header">
-                        <div class="subreddit">{self.subreddit.clone()}</div>
-                        <div class="author">{self.author.clone()}</div>
-                        <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
+            <a class="reddit_comment" href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
+                <div class="comment_header">
+                    <div class="subreddit">{self.subreddit.clone()}</div>
+                    <div class="author">{self.author.clone()}</div>
+                    <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
+                </div>
+                <div class="post">
+                    <div>
+                        {thumbnail}
                     </div>
-                    <div class="post">
-                        <div>
-                            {thumbnail}
-                        </div>
-                        <div>
-                            <div class="comment_title">{self.title.clone()}</div>
-                            {selftext}
-                        </div>
+                    <div>
+                        <div class="comment_title">{self.title.clone()}</div>
+                        {selftext}
                     </div>
-                </a>
-            </div>
+                </div>
+            </a>
         }
     }
 

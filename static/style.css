@@ -145,6 +145,7 @@ span.flatpickr-weekday {
     user-select: none;
 }
 
+.button_active:focus,
 .button_active:hover {
     background-color: var(--search-button-hover);
     box-shadow: 0px 0px 20px var(--shadow);
@@ -173,6 +174,7 @@ span.flatpickr-weekday {
     background-color: var(--card-bg);
 }
 
+.reddit_comment:focus,
 .reddit_comment:hover {
     background-color: var(--card-hover);
     box-shadow: 0px 0px 20px var(--shadow);

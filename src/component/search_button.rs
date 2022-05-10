@@ -24,23 +24,34 @@ impl SearchState {
 #[function_component(SearchButton)]
 pub fn search_button(props: &Props) -> Html {
     let Props { state, on_click } = props.clone();
+    let text = html! {
+        <p>{state.text()}</p>
+    };
 
     match state {
         SearchState::Idle(_) => {
-            let onclick = Callback::from(move |_| {
-                on_click.emit(());
+            let onclick =  {
+                let on_click = on_click.clone();
+                Callback::from(move |_| {
+                    on_click.emit(());
+                })
+            };
+            let onkeypress = Callback::from(move |e: KeyboardEvent| {
+                if e.code() == "Enter" {
+                    on_click.emit(());
+                }
             });
 
             html! {
-                <div class="search_button button_active" onclick={onclick}>
-                    <p>{state.text()}</p>
+                <div class="search_button button_active" tabindex={"0"} {onclick} {onkeypress}>
+                    {text}
                 </div>
             }
         }
         SearchState::Working(_) => {
             html! {
                 <div class="search_button">
-                    <p>{state.text()}</p>
+                    {text}
                 </div>
             }
         }
