@@ -267,7 +267,7 @@ impl Model {
             }
 
             // If getting more posts/comments, add "before_id" GET parameter
-            if let FetchState::Done = &self.state {
+            if matches!(search_type, SearchType::More) {
                 if let Some(r) = self.results.last() {
                     url.query_pairs_mut()
                         .append_pair("before", &r.time().to_string());
