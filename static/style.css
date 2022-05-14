@@ -80,6 +80,10 @@ body {
     width: 100%;
 }
 
+input:hover {
+    cursor: text;
+}
+
 .flatpickr-calendar,
 .flatpickr-months .flatpickr-month,
 .flatpickr-current-month .flatpickr-monthDropdown-months,
