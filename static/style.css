@@ -35,8 +35,12 @@ body {
     flex-wrap: wrap;
 }
 
+.spacer {
+    width: 2px;
+}
+
 .search_half {
-    width: 50%;
+    width: calc(50% - 2px/2);
 }
 
 .search_full {

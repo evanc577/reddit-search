@@ -197,6 +197,7 @@ impl Model {
                         label={"Subreddit:"}
                         on_change={on_subreddit_change}
                         value={self.params.subreddit.clone()} />
+                    <div class="spacer" />
                     <SearchBox width={Width::Half}
                         id={"author"}
                         label={"Author:"}
@@ -210,6 +211,7 @@ impl Model {
                         label={"After:"}
                         on_change={on_time_start_change}
                         value={self.params.time_start.clone()} />
+                    <div class="spacer" />
                     <SearchBox width={Width::Half}
                         id={"time_end"}
                         label={"Before:"}
