@@ -43,16 +43,16 @@ pub fn search_button(props: &Props) -> Html {
             });
 
             html! {
-                <div class="search_button button_active" tabindex={"0"} {onclick} {onkeypress}>
+                <button class="search_button button_active" {onclick} {onkeypress}>
                     {text}
-                </div>
+                </button>
             }
         }
         SearchState::Working(_) => {
             html! {
-                <div class="search_button">
+                <button class="search_button">
                     {text}
-                </div>
+                </button>
             }
         }
     }
