@@ -1,7 +1,31 @@
-use serde::Deserialize;
+use serde::de::Error;
+use serde::{Deserialize, Deserializer};
 use time::{format_description, OffsetDateTime, UtcOffset};
 use web_sys::HtmlImageElement;
 use yew::prelude::*;
+
+fn deserialize_decode_html<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+    let decoded = html_escape::decode_html_entities(&s).into_owned();
+    Ok(decoded)
+}
+
+fn deserialize_link_id<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+    let id = s
+        .split_once('_')
+        .ok_or_else(|| anyhow::anyhow!("Invalid link_id {}", s))
+        .map_err(D::Error::custom)?
+        .1
+        .to_owned();
+    Ok(id)
+}
 
 pub trait Reddit {
     fn time(&self) -> i64;
@@ -12,6 +36,7 @@ pub trait Reddit {
     ) -> Result<Vec<RedditType>, serde_json::Error>
     where
         Self: Sized;
+    fn permalink(&self) -> String;
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -25,11 +50,14 @@ pub struct RedditComment {
     author: String,
     #[serde(rename = "created_utc")]
     time: i64,
+    #[serde(deserialize_with = "deserialize_decode_html")]
     body: String,
-    permalink: String,
+    permalink: Option<String>,
     #[serde(skip)]
     tz_offset: i64,
     id: String,
+    #[serde(deserialize_with = "deserialize_link_id")]
+    link_id: String,
 }
 
 impl Reddit for RedditComment {
@@ -39,10 +67,10 @@ impl Reddit for RedditComment {
 
     fn html(&self) -> Html {
         html! {
-            <a class="reddit_comment" href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
+            <a class="reddit_comment" href={self.permalink()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
                 <div class="comment_header">
-                    <div class="subreddit">{self.subreddit.clone()}</div>
-                    <div class="author">{self.author.clone()}</div>
+                    <div class="subreddit">{String::from("r/") + &self.subreddit}</div>
+                    <div class="author">{String::from("u/") + &self.author}</div>
                     <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
                 </div>
                 <div class="comment_body">{self.body.clone()}</div>
@@ -57,16 +85,22 @@ impl Reddit for RedditComment {
         let comments: RedditMultiple<Self> = serde_json::from_str(json.as_ref())?;
         let mut comments = comments.data;
         for comment in comments.iter_mut() {
-            comment.permalink =
-                format!("https://www.reddit.com{}?context=10000", comment.permalink);
-            comment.subreddit = format!("r/{}", comment.subreddit);
-            comment.author = format!("u/{}", comment.author);
-            comment.body = html_escape::decode_html_entities(&comment.body).into_owned();
             comment.tz_offset = tz_offset;
         }
 
         let comments = comments.into_iter().map(RedditType::Comment).collect();
         Ok(comments)
+    }
+
+    fn permalink(&self) -> String {
+        if let Some(l) = &self.permalink {
+            format!("https://www.reddit.com{}?context=10000", l)
+        } else {
+            format!(
+                "https://www.reddit.com/r/{}/comments/{}//{}?context=10000",
+                self.subreddit, self.link_id, self.id
+            )
+        }
     }
 }
 
@@ -76,14 +110,16 @@ pub struct RedditSubmission {
     author: String,
     #[serde(rename = "created_utc")]
     time: i64,
-    permalink: String,
+    permalink: Option<String>,
     #[serde(skip)]
     tz_offset: i64,
     id: String,
     is_self: bool,
     thumbnail: String,
+    #[serde(deserialize_with = "deserialize_decode_html")]
     title: String,
     url: String,
+    #[serde(deserialize_with = "deserialize_decode_html")]
     selftext: String,
 }
 
@@ -121,10 +157,10 @@ impl Reddit for RedditSubmission {
         };
 
         html! {
-            <a class="reddit_comment" href={self.permalink.clone()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
+            <a class="reddit_comment" href={self.permalink()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
                 <div class="comment_header">
-                    <div class="subreddit">{self.subreddit.clone()}</div>
-                    <div class="author">{self.author.clone()}</div>
+                    <div class="subreddit">{String::from("u/") + &self.subreddit}</div>
+                    <div class="author">{String::from("r/") + &self.author}</div>
                     <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
                 </div>
                 <div class="post">
@@ -147,12 +183,6 @@ impl Reddit for RedditSubmission {
         let submissions: RedditMultiple<Self> = serde_json::from_str(json.as_ref())?;
         let mut submissions = submissions.data;
         for submission in submissions.iter_mut() {
-            submission.permalink = format!("https://www.reddit.com{}", submission.permalink);
-            submission.subreddit = format!("r/{}", submission.subreddit);
-            submission.author = format!("u/{}", submission.author);
-            submission.title = html_escape::decode_html_entities(&submission.title).into_owned();
-            submission.selftext =
-                html_escape::decode_html_entities(&submission.selftext).into_owned();
             submission.tz_offset = tz_offset;
         }
 
@@ -161,6 +191,17 @@ impl Reddit for RedditSubmission {
             .map(RedditType::Submission)
             .collect();
         Ok(submissions)
+    }
+
+    fn permalink(&self) -> String {
+        if let Some(l) = &self.permalink {
+            format!("https://www.reddit.com{}", l)
+        } else {
+            format!(
+                "https://www.reddit.com/r/{}/comments/{}",
+                self.subreddit, self.id
+            )
+        }
     }
 }
 
