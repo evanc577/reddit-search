@@ -50,7 +50,7 @@ features = [
 
 [profile.release]
 lto = true
-opt-level = "s"
+opt-level = "z"
 panic = "abort"
-strip = "symbols"
+strip = "debuginfo"
 codegen-units = 1
