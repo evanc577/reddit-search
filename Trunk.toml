@@ -1,4 +1,7 @@
 [[hooks]]
 stage = "pre_build"
 command = "npx"
-command_arguments = ["rollup", "--config", "rollup.config.js"]
+command_arguments = ["rollup", "--bundleConfigAsCjs", "--config", "rollup.config.js"]
+
+[watch]
+watch = ["script"]

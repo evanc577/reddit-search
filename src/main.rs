@@ -258,8 +258,8 @@ impl Model {
 
             // Add GET query parameters
             url.query_pairs_mut()
-                .append_pair("sort", "desc")
-                .append_pair("limit", "10000")
+                .append_pair("sort", "created_utc")
+                .append_pair("limit", "1000")
                 .append_pair("subreddit", &params.subreddit)
                 .append_pair("author", &params.author)
                 .append_pair("q", &params.query);
