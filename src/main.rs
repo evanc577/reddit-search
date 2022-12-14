@@ -147,7 +147,11 @@ impl Component for Model {
 
         // Error message
         if let FetchState::Failed(err) = &self.state {
-            elems.push(html! { err });
+            elems.push(html! {
+                <div class="error">
+                    {err}
+                </div>
+            });
         }
 
         html! {
