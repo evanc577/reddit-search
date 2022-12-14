@@ -16,15 +16,28 @@ pub struct Props {
 
 #[function_component(Select)]
 pub fn select(props: &Props) -> Html {
-    let Props { width, id, class, label, options, selected, on_input } = props.clone();
+    let Props {
+        width,
+        id,
+        class,
+        label,
+        options,
+        selected,
+        on_input,
+    } = props.clone();
 
     let oninput = Callback::from(move |event: InputEvent| {
         on_input.emit(select_value(event));
     });
 
-    let options: Vec<_> = options.iter().map(|s| html! {
-        <option value={s.clone()} selected={s == &selected}>{s.clone()}</option>
-    }).collect();
+    let options: Vec<_> = options
+        .iter()
+        .map(|s| {
+            html! {
+                <option value={s.clone()} selected={s == &selected}>{s.clone()}</option>
+            }
+        })
+        .collect();
 
     let class = format!("{} {}", width.class(), class);
 

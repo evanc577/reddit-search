@@ -30,7 +30,7 @@ pub fn search_button(props: &Props) -> Html {
 
     match state {
         SearchState::Idle(_) => {
-            let onclick =  {
+            let onclick = {
                 let on_click = on_click.clone();
                 Callback::from(move |_| {
                     on_click.emit(());

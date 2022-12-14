@@ -12,7 +12,11 @@ pub struct Props {
 
 #[function_component(TextInput)]
 pub fn text_input(props: &Props) -> Html {
-    let Props { id, value, on_change } = props.clone();
+    let Props {
+        id,
+        value,
+        on_change,
+    } = props.clone();
 
     let oninput = Callback::from(move |input_event: InputEvent| {
         on_change.emit(input_value(input_event));

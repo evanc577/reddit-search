@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::fmt::{Display, Debug};
+use std::fmt::{Debug, Display};
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;

@@ -1,10 +1,10 @@
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
-use web_sys::{Event, HtmlInputElement, InputEvent, HtmlSelectElement};
+use web_sys::{Event, HtmlInputElement, HtmlSelectElement, InputEvent};
 
-pub mod text_input;
 pub mod search_box;
 pub mod search_button;
 pub mod select;
+pub mod text_input;
 
 fn input_value(e: InputEvent) -> String {
     let event: Event = e.dyn_into().unwrap_throw();

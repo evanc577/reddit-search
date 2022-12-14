@@ -6,11 +6,11 @@ mod pushshift;
 use std::str::FromStr;
 
 use component::search_box::SearchBox;
-use component::Width;
 use component::search_button::{SearchButton, SearchState};
 use component::select::Select;
+use component::Width;
 use fetch::fetch;
-use params::{SearchParams, Endpoint};
+use params::{Endpoint, SearchParams};
 use pushshift::RedditType;
 use time::{format_description, PrimitiveDateTime, UtcOffset};
 use url::Url;
@@ -50,7 +50,6 @@ pub enum SearchType {
     Initial,
     More,
 }
-
 
 impl Component for Model {
     type Message = Msg;
