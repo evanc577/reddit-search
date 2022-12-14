@@ -258,10 +258,20 @@ impl Model {
             // Add GET query parameters
             url.query_pairs_mut()
                 .append_pair("sort", "created_utc")
-                .append_pair("limit", "1000")
-                .append_pair("subreddit", &params.subreddit)
-                .append_pair("author", &params.author)
-                .append_pair("q", &params.query);
+                .append_pair("limit", "1000");
+
+            if !self.params.subreddit.is_empty() {
+                url.query_pairs_mut()
+                    .append_pair("subreddit", &params.subreddit);
+            }
+
+            if !self.params.author.is_empty() {
+                url.query_pairs_mut().append_pair("author", &params.author);
+            }
+
+            if !self.params.query.is_empty() {
+                url.query_pairs_mut().append_pair("q", &params.query);
+            }
 
             if let Some(ts) = parse_time(&params.time_start, self.tz_offset) {
                 url.query_pairs_mut().append_pair("after", &ts.to_string());
