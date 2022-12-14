@@ -4,4 +4,4 @@ command = "npx"
 command_arguments = ["rollup", "--bundleConfigAsCjs", "--config", "rollup.config.js"]
 
 [watch]
-watch = ["script"]
+watch = ["script", "src"]
