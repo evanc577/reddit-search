@@ -4,3 +4,14 @@ build:
 
 serve:
     trunk serve
+
+push:
+    just build
+    git checkout gh-pages
+    rm *.png *.svg *.ico *.wasm *.js *.html
+    git add dist/*
+    git mv --force dist/* .
+    git add -u
+    git commit -m "Update gh-pages"
+    git push origin HEAD
+    git checkout -
