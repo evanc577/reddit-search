@@ -47,3 +47,10 @@ version = "1.0"
 features = [
   "derive",
 ]
+
+[profile.release]
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = "symbols"
+codegen-units = 1
