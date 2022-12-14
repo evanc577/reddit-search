@@ -44,7 +44,7 @@ struct RedditMultiple<T> {
     data: Vec<T>,
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct RedditComment {
     subreddit: String,
     author: String,
@@ -104,7 +104,7 @@ impl Reddit for RedditComment {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct RedditSubmission {
     subreddit: String,
     author: String,

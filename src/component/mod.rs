@@ -20,7 +20,7 @@ fn select_value(e: InputEvent) -> String {
     target.value()
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Width {
     Full,
     Half,

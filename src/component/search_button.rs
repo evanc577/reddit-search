@@ -6,7 +6,7 @@ pub struct Props {
     pub on_click: Callback<()>,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum SearchState {
     Idle(String),
     Working(String),
