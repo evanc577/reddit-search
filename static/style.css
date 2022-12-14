@@ -18,6 +18,7 @@
 body {
     background-color: var(--bg);
     color: var(--fg);
+    font-family: sans-serif;
 }
 
 .search {
