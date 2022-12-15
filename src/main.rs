@@ -99,12 +99,10 @@ impl Component for Model {
                 false
             }
             Msg::UpdateTimeStart(s) => {
-                log::info!("UpdateTimeStart {:?}", s);
                 self.params.time_start = s;
                 false
             }
             Msg::UpdateTimeEnd(s) => {
-                log::info!("UpdateTimeEnd {:?}", s);
                 self.params.time_end = s;
                 false
             }
