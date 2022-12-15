@@ -1,5 +1,5 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy to Github Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -21,12 +21,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Single deploy job since we're just deploying
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      # Install build prerequisites
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
@@ -42,14 +43,19 @@ jobs:
         run: sudo apt-get install -y binaryen
       - name: Install rollup
         run: npm install rollup --save-dev
+
+      # Build
       - name: Build site
         run: |
           trunk build --release --public-url ${{ github.event.repository.name }}
           for file in dist/*.wasm; do wasm-opt -Oz -o $file $file; done
+
+      # Upload artifact
       - uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist/
+
   deploy:
     needs: build
     environment:
@@ -57,11 +63,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Pages
-        uses: actions/configure-pages@v2
+      # Download artifact
       - uses: actions/download-artifact@v3
         with:
           name: dist
+
+      # Deploy
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
