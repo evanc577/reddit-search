@@ -159,8 +159,8 @@ impl Reddit for RedditSubmission {
         html! {
             <a class="reddit_comment" href={self.permalink()} target="_blank" rel="noopener noreferrer" title="View on Reddit">
                 <div class="comment_header">
-                    <div class="subreddit">{String::from("u/") + &self.subreddit}</div>
-                    <div class="author">{String::from("r/") + &self.author}</div>
+                    <div class="subreddit">{String::from("r/") + &self.subreddit}</div>
+                    <div class="author">{String::from("u/") + &self.author}</div>
                     <div class="time">{format_timestamp(self.time, self.tz_offset)}</div>
                 </div>
                 <div class="post">
