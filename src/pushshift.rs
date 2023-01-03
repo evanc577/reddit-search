@@ -205,6 +205,7 @@ impl Reddit for RedditSubmission {
     }
 }
 
+#[derive(Debug)]
 pub enum RedditType {
     Comment(RedditComment),
     Submission(RedditSubmission),

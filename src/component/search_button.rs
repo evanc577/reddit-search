@@ -3,7 +3,7 @@ use yew::prelude::*;
 #[derive(Clone, PartialEq, Properties)]
 pub struct Props {
     pub state: SearchState,
-    pub on_click: Callback<()>,
+    pub on_click: Option<Callback<()>>,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -30,20 +30,15 @@ pub fn search_button(props: &Props) -> Html {
 
     match state {
         SearchState::Idle(_) => {
-            let onclick = {
-                let on_click = on_click.clone();
+            let onclick = on_click.map(|c| {
+                let on_click = c.clone();
                 Callback::from(move |_| {
                     on_click.emit(());
                 })
-            };
-            let onkeypress = Callback::from(move |e: KeyboardEvent| {
-                if e.code() == "Enter" {
-                    on_click.emit(());
-                }
             });
 
             html! {
-                <button class="search_button button_active" {onclick} {onkeypress}>
+                <button class="search_button button_active" {onclick}>
                     {text}
                 </button>
             }

@@ -16,6 +16,7 @@ use time::{format_description, PrimitiveDateTime, UtcOffset};
 use url::Url;
 use yew::prelude::*;
 
+#[derive(Debug)]
 pub enum FetchState {
     NotFetching,
     Fetching,
@@ -24,6 +25,7 @@ pub enum FetchState {
     Failed(String),
 }
 
+#[derive(Debug)]
 enum Msg {
     Search,
     More,
@@ -45,7 +47,7 @@ struct Model {
     last_params: Option<SearchParams>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SearchType {
     Initial,
     More,
@@ -70,6 +72,7 @@ impl Component for Model {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        log::debug!("{:?}", &msg);
         match msg {
             Msg::Search => {
                 self.results.clear();
@@ -166,7 +169,6 @@ impl Model {
         let on_query_change = ctx.link().callback(Msg::UpdateQuery);
         let on_time_start_change = ctx.link().callback(Msg::UpdateTimeStart);
         let on_time_end_change = ctx.link().callback(Msg::UpdateTimeEnd);
-        let search_button_click = ctx.link().callback(|_| Msg::Search);
         let on_submit = ctx.link().callback(|e: FocusEvent| {
             e.prevent_default();
             Msg::Search
@@ -228,7 +230,7 @@ impl Model {
                         value={self.params.query.clone()} />
                 </div>
 
-                <SearchButton state={search_state} on_click={search_button_click} />
+                <SearchButton state={search_state} />
 
                 <script src={"bundle.js"}></script>
             </form>
@@ -237,14 +239,14 @@ impl Model {
 
     fn more_button(&self, ctx: &Context<Self>) -> Html {
         let on_click = ctx.link().callback(|_| Msg::More);
-        let search_state = if matches!(self.state, FetchState::Fetching) {
+        let state = if matches!(self.state, FetchState::Fetching) {
             SearchState::Working("Fetching...".to_string())
         } else {
             SearchState::Idle("More".to_string())
         };
 
         html! {
-            <SearchButton state={search_state} on_click={on_click} />
+            <SearchButton {state} {on_click} />
         }
     }
 

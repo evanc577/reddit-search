@@ -5,7 +5,7 @@ use gloo_storage::{LocalStorage, Storage};
 
 use crate::pushshift::{Reddit, RedditComment, RedditSubmission, RedditType};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SearchParams {
     pub endpoint: Endpoint,
     pub subreddit: String,
@@ -63,7 +63,7 @@ impl SearchParams {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Endpoint {
     Submission,
     Comment,
