@@ -72,7 +72,6 @@ impl Component for Model {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        log::debug!("{:?}", &msg);
         match msg {
             Msg::Search => {
                 self.results.clear();
@@ -110,9 +109,9 @@ impl Component for Model {
                 false
             }
             Msg::SetPsFetchState(x) => {
-                if let FetchState::Success(_, _, ref params) = x {
-                    params.store();
+                self.params.store();
 
+                if let FetchState::Success(_, _, ref params) = x {
                     // Update last search params
                     self.last_params = Some(params.clone());
                 }
