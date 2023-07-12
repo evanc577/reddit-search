@@ -260,7 +260,6 @@ impl Model {
 
             // Add GET query parameters
             url.query_pairs_mut()
-                .append_pair("sort", "created_utc")
                 .append_pair("limit", "1000");
 
             if !self.params.subreddit.is_empty() {

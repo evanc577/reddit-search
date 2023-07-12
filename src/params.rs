@@ -75,8 +75,8 @@ static COMMENT_STR: &str = "Comments";
 impl Endpoint {
     pub fn url(&self) -> &'static str {
         match self {
-            Self::Submission => "https://api.pushshift.io/reddit/submission/search",
-            Self::Comment => "https://api.pushshift.io/reddit/comment/search",
+            Self::Submission => "https://api.pullpush.io/reddit/submission/search",
+            Self::Comment => "https://api.pullpush.io/reddit/comment/search",
         }
     }
 
