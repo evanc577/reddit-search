@@ -1,5 +1,6 @@
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
+use serde_json::Value;
 use time::{format_description, OffsetDateTime, UtcOffset};
 use web_sys::HtmlImageElement;
 use yew::prelude::*;
@@ -27,6 +28,23 @@ where
     Ok(id)
 }
 
+fn deserialize_int<'de, D: Deserializer<'de>>(deserializer: D) -> Result<i64, D::Error> {
+    let val = match Value::deserialize(deserializer)? {
+        Value::String(s) => s.parse().map_err(D::Error::custom)?,
+        Value::Number(num) => {
+            if num.is_i64() {
+                num.as_i64().unwrap()
+            } else if num.is_f64() {
+                num.as_f64().unwrap() as i64
+            } else {
+                return Err(D::Error::custom("wrong type"))
+            }
+        }
+        _ => return Err(D::Error::custom("wrong type")),
+    };
+    Ok(val)
+}
+
 pub trait Reddit {
     fn time(&self) -> i64;
     fn html(&self) -> Html;
@@ -49,6 +67,7 @@ pub struct RedditComment {
     subreddit: String,
     author: String,
     #[serde(rename = "created_utc")]
+    #[serde(deserialize_with = "deserialize_int")]
     time: i64,
     #[serde(deserialize_with = "deserialize_decode_html")]
     body: String,
@@ -109,6 +128,7 @@ pub struct RedditSubmission {
     subreddit: String,
     author: String,
     #[serde(rename = "created_utc")]
+    #[serde(deserialize_with = "deserialize_int")]
     time: i64,
     permalink: Option<String>,
     #[serde(skip)]
